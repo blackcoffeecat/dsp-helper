@@ -4,8 +4,6 @@
 
 node_modules/
 
-dist/
-
 *.pid
 *.log
 *.zip
