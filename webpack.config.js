@@ -37,6 +37,9 @@ module.exports = {
     ],
   },
   entry: path.resolve('src/index.jsx'),
+  output: {
+    path: path.resolve('dist'),
+  },
   resolve: {
     extensions: ['.js', '.jsx', '.ts', '.tsx'],
     alias: {
