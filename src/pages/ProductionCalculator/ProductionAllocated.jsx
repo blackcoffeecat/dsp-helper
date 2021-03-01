@@ -135,11 +135,7 @@ function ProductionAllocated() {
                   item={itemMap.get(itemId)}
                   type='image'
                   imageSize={imageSize}
-                  badge={
-                    rate === 1
-                      ? `${parseNum(itemRate * chainSize)}/s`
-                      : `${parseNum(itemRate * chainSize * rate)}/m`
-                  }
+                  badge={`${parseNum(itemRate * chainSize * rate)}/${{ 1: 's', 60: 'm' }[rate]}`}
                 />
                 <Box p={1} />
 
@@ -162,11 +158,7 @@ function ProductionAllocated() {
                       item={itemMap.get(id)}
                       type='image'
                       imageSize={imageSize}
-                      badge={
-                        rate === 1
-                          ? `${parseNum(count * chainSize)}/s`
-                          : `${parseNum(count * chainSize * rate)}/m`
-                      }
+                      badge={`${parseNum(count * chainSize * rate)}/${{ 1: 's', 60: 'm' }[rate]}`}
                     />
                     <Box p={1} />
                   </React.Fragment>

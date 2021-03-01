@@ -1,5 +1,6 @@
 import { getChainId, getSelfConsumeMap, isLeafItem } from '@/app/solutions/shared';
-import { mergeMapNum } from '@/utils/object-utils';
+import { mergeMapNum, round } from '@/utils/object-utils';
+import Big from 'big.js';
 
 const itemCollectSolution = (item, speed, state, context) => {
   const { resources, alternateRecipes, assemblers } = state;
@@ -66,7 +67,7 @@ const itemCollectSolution = (item, speed, state, context) => {
 
       const { itemRate, recipe } = assemblyInfoMap.get(assemblyChainId);
 
-      const chainSize = consumption / itemRate;
+      const chainSize = round(consumption / itemRate);
       mergeMapNum([[assemblyChainId, chainSize]], assemblyChainMap);
 
       recipe.forEach(([id, count]) => {
