@@ -5,7 +5,14 @@ const Copy = require('copy-webpack-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 
-const plugins = [new Html({ title: 'Dyson Sphere Program Helper' })];
+const plugins = [
+  new Html({
+    title: 'Dyson Sphere Program Helper',
+    meta: {
+      description: 'Dyson Sphere Program Calculator. Made with material-ui.',
+    },
+  }),
+];
 
 if (process.env.NODE_ENV === 'production') {
   plugins.push(
@@ -38,7 +45,7 @@ module.exports = {
   },
   entry: path.resolve('src/index.jsx'),
   output: {
-    path: path.resolve('dist'),
+    path: path.resolve('docs'),
   },
   resolve: {
     extensions: ['.js', '.jsx', '.ts', '.tsx'],
