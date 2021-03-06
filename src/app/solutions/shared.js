@@ -2,11 +2,8 @@ import { mergeMapNum } from '@/utils/object-utils';
 
 export const getChainId = (itemId, dedicatedMap, produceMap) => {
   let itemChains = produceMap.get(itemId);
-  if (!dedicatedMap.get(itemId) && itemChains?.length !== 1) {
-    return false;
-  }
 
-  return dedicatedMap.get(itemId) || itemChains[0];
+  return dedicatedMap.get(itemId) || itemChains?.[0] || null;
 };
 
 export const multiplyCount = (array, size) => array.map(([id, count]) => [id, count * size]);

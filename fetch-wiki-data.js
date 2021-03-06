@@ -196,7 +196,7 @@ const run = async () => {
   const ids = new Set();
   const itemMap = new Map(items.map(v => [v.id, v]));
   chains.forEach(chain => {
-    if (itemMap.get(chain.itemId)?.categories?.include('Natural Resource')) return;
+    if (itemMap.get(chain.itemId)?.categories?.includes('Natural Resource')) return;
     chain.recipe.forEach(([id]) => ids.add(id));
     chain.output.forEach(([id]) => ids.add(id));
     chain.building?.forEach(id => ids.add(id));

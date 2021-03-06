@@ -4,7 +4,7 @@ import useJson from '@/hooks/useJson';
 import useOnChange from '@/hooks/useOnChange';
 import useShallowMemo from '@/hooks/useShallowMemo';
 import useSimpleMemo from '@/hooks/useSimpleMemo';
-import { useDebugValue, useMemo, useState } from 'react';
+import { useDebugValue, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 
 function useProductionState(solution) {
   const items = useJson('data/items.json');
@@ -117,7 +117,7 @@ function useProductionState(solution) {
   });
 
   // Calculate Assembly Lines
-  const [productionChains, unassigned] = useMemo(() => {
+  const [productionChains, extraResources] = useMemo(() => {
     console.log(produceItem, speed, state, context);
     if (!items?.length || !chains?.length || !produceItem) return [null, null];
 
@@ -126,8 +126,15 @@ function useProductionState(solution) {
     return result;
   }, [produceItem, speed, items, chains, state]);
 
+  useLayoutEffect(() => {
+    if (extraResources?.length) {
+      setTimeout(() => {
+        setResources(list => [...new Set([...list, ...extraResources])]);
+      });
+    }
+  }, [extraResources]);
+
   const result = useSimpleMemo({
-    unassigned,
     productionChains,
   });
 

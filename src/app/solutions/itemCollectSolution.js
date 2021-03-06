@@ -1,6 +1,5 @@
 import { getChainId, getSelfConsumeMap, isLeafItem } from '@/app/solutions/shared';
 import { mergeMapNum, round } from '@/utils/object-utils';
-import Big from 'big.js';
 
 const itemCollectSolution = (item, speed, state, context) => {
   const { resources, alternateRecipes, assemblers } = state;
@@ -14,14 +13,17 @@ const itemCollectSolution = (item, speed, state, context) => {
   const assemblyChainMap = new Map();
   const assemblyInfoMap = new Map();
 
+  const extraResources = new Map();
+
   while (next.size) {
     const itemList = [...next];
     next = new Map();
 
     for (const [itemId, consumption] of itemList) {
       const chainId = getChainId(itemId, dedicatedMap, produceMap);
+
       if (!chainId) {
-        indicated.add(itemId);
+        mergeMapNum([[itemId, consumption]], extraResources);
         continue;
       }
 
@@ -40,7 +42,11 @@ const itemCollectSolution = (item, speed, state, context) => {
         if (building) {
           duration = duration / (itemMap.get(building)?.produceSpeed ?? 1);
         }
-        console.log(itemId, itemMap.get(building), itemMap.get(building)?.produceSpeed, duration);
+
+        if (duration === 0) {
+          mergeMapNum([[itemId, consumption]], extraResources);
+          continue;
+        }
 
         let recMap = new Map(recipe);
         let outMap = new Map(output);
@@ -71,7 +77,10 @@ const itemCollectSolution = (item, speed, state, context) => {
       mergeMapNum([[assemblyChainId, chainSize]], assemblyChainMap);
 
       recipe.forEach(([id, count]) => {
-        if (id !== itemId && !isLeafItem(id, resources, itemMap)) {
+        if (
+          id !== itemId &&
+          !isLeafItem(id, resources.concat([...extraResources.keys()]), itemMap)
+        ) {
           mergeMapNum([[id, count]], next, chainSize);
         }
       });
@@ -84,7 +93,7 @@ const itemCollectSolution = (item, speed, state, context) => {
     return [info, ...ret];
   }, []);
 
-  return [assemblyChains, [...indicated]];
+  return [assemblyChains, [...extraResources.keys()]];
 };
 
 export default itemCollectSolution;

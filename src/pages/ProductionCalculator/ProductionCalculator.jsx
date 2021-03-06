@@ -4,9 +4,8 @@ import useProductionState from '@/app/useProductionState';
 import ItemPicker from '@/components/ItemPicker';
 import useIdleEffect from '@/hooks/useIdleEffect';
 import useProxy from '@/hooks/useProxy';
-import ChooseRecipe from '@/pages/ProductionCalculator/ChooseRecipe';
 import ProduceItem from '@/pages/ProductionCalculator/ProduceItem';
-import ProductionAllocated from '@/pages/ProductionCalculator/ProductionAllocated';
+import ProductionChains from '@/pages/ProductionCalculator/ProductionChains';
 import { Box } from '@material-ui/core';
 import React, { useRef } from 'react';
 
@@ -29,9 +28,7 @@ function ProductionCalculator() {
       <ProductionProvider value={appContext}>
         <ProduceItem />
 
-        <ChooseRecipe />
-
-        <ProductionAllocated />
+        <ProductionChains />
 
         <ItemPicker ref={pickerRef} />
       </ProductionProvider>

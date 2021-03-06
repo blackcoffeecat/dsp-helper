@@ -3,8 +3,10 @@ import { isLeafItem } from '@/app/solutions/shared';
 import { ItemMapList } from '@/components/ItemView/ItemList';
 import ItemView from '@/components/ItemView/ItemView';
 import LayoutPaper, { PaperIcons } from '@/components/LayoutPaper';
+import RecipeView from '@/components/RecipeView';
 import useCall, { useCreateCall } from '@/hooks/useCall';
 import useConstants from '@/hooks/useConstants';
+import useToggle from '@/hooks/useToggle';
 import { mergeMapNum, numReadable, parseNum } from '@/utils/object-utils';
 import {
   Box,
@@ -13,11 +15,13 @@ import {
   List,
   ListItem,
   ListItemSecondaryAction,
+  Menu,
+  MenuItem,
   ToggleButton,
   ToggleButtonGroup,
   Tooltip,
 } from '@material-ui/core';
-import { WidgetsOutlined } from '@material-ui/icons';
+import { RemoveCircle, SettingsOutlined, WidgetsOutlined } from '@material-ui/icons';
 import React, { memo, useMemo, useState } from 'react';
 
 const selector = ({ context, state, result, actions }) => {
@@ -25,6 +29,7 @@ const selector = ({ context, state, result, actions }) => {
     items: context.items,
     itemMap: context.itemMap,
     chainMap: context.chainMap,
+    produceMap: context.produceMap,
 
     assemblers: state.assemblers,
     resources: state.resources,
@@ -36,7 +41,7 @@ const selector = ({ context, state, result, actions }) => {
   };
 };
 
-function ProductionAllocated() {
+function ProductionChains() {
   const {
     items,
     itemMap,
@@ -44,6 +49,7 @@ function ProductionAllocated() {
     resources,
     productionChains,
     unassigned,
+    produceMap,
     actions,
   } = useProductionContext(selector);
 
@@ -78,7 +84,7 @@ function ProductionAllocated() {
     });
 
     return [buildingMap, resourceMap, workConsumption];
-  }, [productionChains, assemblers]);
+  }, [productionChains, assemblers, resources]);
 
   const changeAssembler = useCall((e, value) => {
     if (assembler) actions.removeAssembler(assembler);
@@ -89,12 +95,47 @@ function ProductionAllocated() {
 
   const createCall = useCreateCall();
 
+  const [open, toggle] = useToggle();
+  const [assemblyList, setAssemblyList] = useState(null);
+  const [anchorEl, setAnchorEl] = useState(null);
+
+  const openSelect = useCall((assembles, anchorEl) => {
+    setAssemblyList(assembles);
+    setAnchorEl(anchorEl);
+    toggle();
+  });
+
   if (!productionChains?.length || unassigned?.length > 0) return null;
+
+  const clickSelect = itemId =>
+    createCall(`${itemId}:select`, event => {
+      openSelect(
+        produceMap.get(itemId)?.map((chainId, index, array) => (
+          <MenuItem
+            key={chainId}
+            dense
+            divider={index !== array.length - 1}
+            onClick={createCall(`${itemId}:${chainId}`, () => {
+              toggle();
+              actions.addItemRecipe(itemId, chainId);
+            })}
+          >
+            <RecipeView chainId={chainId} />
+          </MenuItem>
+        )),
+        event.target,
+      );
+    });
+
+  const onAddResource = itemId =>
+    createCall(`${itemId}:toResource`, () => {
+      actions.addToResource(itemId);
+    });
 
   const imageSize = 64;
 
   return (
-    <LayoutPaper title='Production Allocated'>
+    <LayoutPaper title='Production Chains'>
       <PaperIcons>
         <ToggleButtonGroup size='small' exclusive value={rate} onChange={changeRate}>
           <ToggleButton value={1}>Per Second</ToggleButton>
@@ -114,13 +155,14 @@ function ProductionAllocated() {
           ))}
         </ToggleButtonGroup>
       </PaperIcons>
+
+      <Menu open={open} onClose={toggle} anchorEl={anchorEl}>
+        {assemblyList}
+      </Menu>
+
       <List>
         {productionChains.map(chainInfo => {
           const { assemblyChainId, itemId, itemRate, recipe, building, chainSize } = chainInfo;
-
-          const onAddResource = createCall(`${assemblyChainId}:toResource`, () => {
-            actions.addToResource(itemId);
-          });
 
           return (
             <ListItem
@@ -166,9 +208,18 @@ function ProductionAllocated() {
 
                 <Box width={48} />
               </Box>
+
               <ListItemSecondaryAction>
+                {produceMap.get(itemId)?.length > 1 && (
+                  <Tooltip title='Change Production Chain'>
+                    <IconButton onClick={clickSelect(itemId)}>
+                      <SettingsOutlined />
+                    </IconButton>
+                  </Tooltip>
+                )}
+
                 <Tooltip title='Add to Resource'>
-                  <IconButton edge='end' onClick={onAddResource}>
+                  <IconButton edge='end' onClick={onAddResource(itemId)}>
                     <WidgetsOutlined />
                   </IconButton>
                 </Tooltip>
@@ -197,6 +248,6 @@ function ProductionAllocated() {
   );
 }
 
-ProductionAllocated = memo(ProductionAllocated);
+ProductionChains = memo(ProductionChains);
 
-export default ProductionAllocated;
+export default ProductionChains;
